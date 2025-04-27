@@ -75,11 +75,24 @@ def order_finding_circuit(a,N):
 
     return circuit
 
-def find_order(a,N):
+def find_order_classical(a, N):
+    """
+    Finds the order of a in Z_N. a and N must be mutually prime
+    """
+    cur_exp = 1
+    while pow(a,cur_exp,N) != 1:
+        cur_exp += 1
+    return cur_exp
+
+def find_order(a, N, classical=False):
     """
     Given a, N, mutually prime and such that a < N, applies the quantum
     order finding circuit to obtain the order of a in Z_N.
+    
+    Set flag "classical" for classical order finding
     """
+    if classical:
+        return find_order_classical(a, N)
     n = floor(log(N-1,2)) + 1
     m = 2*n
     circuit = order_finding_circuit(a,N)
@@ -98,7 +111,7 @@ def find_order(a,N):
         if pow(a,r,N)==1: 
             return r
 
-def factor_integer(N):
+def factor_integer(N, classical=False):
     """ 
     Breaks an integer into prime factors, and returns the factors as a list
     
@@ -129,7 +142,7 @@ def factor_integer(N):
         if d > 1:
             factor = d
         else:
-            r = find_order(a,N)
+            r = find_order(a, N, classical)
             if r % 2 == 0:
                 x = pow(a,r//2,N) - 1
                 d = gcd(x,N)
@@ -142,14 +155,15 @@ def factor_integer(N):
         # if no factor was ever found, then we can assume N itself is prime
         return [N]
 
-def show_factoring(N):
+def show_factoring(N, classical=False):
     """
     factors integer N and shows the prime decomposition in a human-readable form
 
     Args: N: the number to factor
+          classical: set for classical order finding (i.e. not via quantum circuit)
     Returns: a string containing a human-readable form of the prime decomposition
     """
-    factor_list = factor_integer(N)
+    factor_list = factor_integer(N, classical)
     factor_list.sort()
     cur_factor = -1
     cur_exponent = 0
@@ -173,6 +187,7 @@ def show_factoring(N):
 
 if __name__ == '__main__':
     number_to_factor = int(sys.argv[1])
+    classical = len(sys.argv) > 2 and sys.argv[2] == '1'
     print(f"Prime decomposition of number {number_to_factor}:")
-    print(show_factoring(number_to_factor))
+    print(show_factoring(number_to_factor, classical))
     
